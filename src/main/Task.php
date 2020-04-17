@@ -2,120 +2,121 @@
 
 class Task
 {
-        const STATUS_NEW = 'Новое';
-	const STATUS_WORK = 'В Работе';
-	const STATUS_DONE = 'Сделано';
-	const STATUS_CANCEL = 'Отменено';
+	const STATUS_NEW = 'New';
+	const STATUS_WORK = 'inWork';
+	const STATUS_DONE = 'Done';
+	const STATUS_CANCEL = 'Canceled';
 
         //Действия Заказчика
-	const ACTION_SETWORKER = 'Выбрать исполнителя';
-	const ACTION_CANCEL = 'Отменить';
-	const ACTION_CLOSE = 'Закрыть';
+	const ACTION_CANCEL = 'Cancel';
+	const ACTION_CLOSE = 'Completed';
         
         //Действия Исполнитетеля
-	const ACTION_ACCEPT = 'Принять';
-	const ACTION_CANCELACCEPTED = 'Отменить принятие';
+	const ACTION_ACCEPT = 'Accept';
+	const ACTION_CANCELACCEPTED = 'CancelAccepted';
         
         //Действия общие
-	const ACTION_MESSAGE = 'Написать сообщение';
+	const ACTION_MESSAGE = 'Message';
 
 	
-	private $Client_Id = 0; //Идентификатор заказчика
-	private $Worker_Id = 0; //Идентификатор исполнителя может быть = 0 пока задание не принято исполнителем 
-        private $Worker_id_list = [];
+	private $clientId; //Идентификатор заказчика
+	private $workerId ; //Идентификатор исполнителя 
+	private $statusActionResults;
 
 
-        public $CurrentStatus = '';
-	public $Task_Id = 0; //Идентификатор задания
+	public $currentStatus;
+	private $statusMap;
+        
 	
-	//Task_id = 0 если задание еще не создано (нет записи в бд)
-	//, CurrectUser_Id определит роль пользователся существующего задания  и будет присвоено Client_Id нового задания 
-	public function __constuct($Task_Id)  //конструктор
+	public function __construct($currentUser, $workerID)  //конструктор
 	{
-		
+            //echo 'Construct me';
+            $this->clientId = $currentUser;
+            $this->currentStatus = self::STATUS_NEW;
+            $this->workerId = $workerID;
+            $this->statusActionResults = [self::ACTION_CANCEL => self::STATUS_CANCEL, self::ACTION_CLOSE => self::STATUS_DONE, self::ACTION_CANCELACCEPTED  => self::STATUS_NEW];        
+            $this->statusMap = [self::STATUS_NEW  => 'Новое',self::STATUS_WORK  => 'Выполняется',self::STATUS_CANCEL  => 'Отменено',self::STATUS_DONE  => 'Завершено'
+                               ,self::ACTION_CANCEL => 'Отменить', self::ACTION_CLOSE => 'Завершить', self::ACTION_ACCEPT  => 'Принять', self::ACTION_CANCELACCEPTED  => 'Отказаться'         
+                               ,self::ACTION_MESSAGE => 'Написать'];        
 	}
 	
-	//Действия Заказчика
-	public function CreateNewTask($Client_Id)  //Создать новое задание
-	{
-		$this->Client_Id = $Client_Id;
-                $this->CurrentStatus = Task::STATUS_NEW;
-	}
 	
 	public function CancelTask()  //Отменить задание
 	{
-                $this->CurrentStatus = Task::STATUS_CANCEL;		
+                $this->currentStatus = self::STATUS_CANCEL;		
 	}
 	
-	public function SetWorker($CurrectUser_Id)  //Выбрать исполнителя
-	{
-            if (($CurrectUser_Id == $this->Client_Id) and isset($this->Worker_id_list[0]))
-            {
-		$this->Worker_Id = $this->Worker_id_list[0];	// пока всегда первый
-                $this->CurrentStatus = Task::STATUS_WORK;
-            }    
-	}
 	
 	public function TaskCompleted()  //Принять задание (отметить как выполненное)
 	{
-            $this->CurrentStatus = Task::STATUS_DONE;
+            $this->currentStatus = self::STATUS_DONE;
 	}
 
 
 	//Действия Исполнителя
-	public function AcceptTask($CurrectUser_Id)  //Принять задание
+	public function AcceptTask($сurrectUserId)  //Принять задание
 	{
-            $this->Worker_id_list[] = $CurrectUser_Id;	
+            $this->currentStatus = self::STATUS_WORK;		
 	}
 	
 	public function CancelAcceptTask()  //Отказаться от  задания
 	{
-            $this->Worker_Id = 0;	
-            $this->CurrentStatus = Task::STATUS_NEW;
+            $this->currentStatus = self::STATUS_NEW;
 	}
 	
 	
 	// Общее действие, доступно исполнителю и заказчику
-	public function WriteMessage($CurrectUser_Id)  //Написать сообщения
+	public function WriteMessage($сurrectUserId)  //Написать сообщения
 	{
-
+            //echo 'Write me';
 	}
 	
 	
-	public function  ListActions($CurrectUser_Id) //Список доступных действий
+	public function  ListActions($сurrectUserId) //Список доступных действий
 	{
-            $ListClientActions = [  Task::STATUS_NEW => [Task::ACTION_SETWORKER, Task::ACTION_CANCEL],
-                                    Task::STATUS_WORK => [Task::ACTION_CLOSE]
+            $ListClientActions = [  self::STATUS_NEW => [self::ACTION_CANCEL],
+                                    self::STATUS_WORK => [self::ACTION_CLOSE]
                     ];
             
             
-            $ListWorkerActions= [  Task::STATUS_NEW => [Task::ACTION_ACCEPT],
-                                    Task::STATUS_WORK => [Task::ACTION_CANCELACCEPTED]
+            $ListWorkerActions= [  self::STATUS_NEW => [self::ACTION_ACCEPT],
+                                    self::STATUS_WORK => [self::ACTION_CANCELACCEPTED]
                     ];
             
             $ListActions = [];
             
-            if ($CurrectUser_Id == $this->Client_Id)
+            if ($сurrectUserId == $this->Client_Id)
             {
-                    $ListActions =  $ListClientActions[$this->CurrentStatus];
+                    $ListActions =  $ListClientActions[$this->currentStatus];
             }       
             else
             {
-                    $ListActions =  $ListWorkerActions[$this->CurrentStatus];                
+                    $ListActions =  $ListWorkerActions[$this->currentStatus];                
             }
-            if (($this->CurrentStatus == Task::STATUS_NEW) or ($this->CurrentStatus == Task::STATUS_WORK))
-                {$ListActions[] = Task::ACTION_MESSAGE;}
+            if (($this->currentStatus == self::STATUS_NEW) or ($this->currentStatus == self::STATUS_WORK))
+                {$ListActions[] = self::ACTION_MESSAGE;}
             return $ListActions;        
 	}
 
 	public function getNextStatus($Action) //Статус после действия
 	{
-            $NextStatus = $this->CurrentStatus;
-            $StatusMap = [  Task::ACTION_SETWORKER => Task::STATUS_WORK, Task::ACTION_CANCEL => Task::STATUS_CANCEL, Task::ACTION_CLOSE => Task::STATUS_DONE, Task::ACTION_CANCELACCEPTED  => Task::STATUS_NEW];
-            if (isset($StatusMap[$Action])) 
-                {$NextStatus = $StatusMap[$Action];}
+            $NextStatus = $this->currentStatus;            
+            if (isset($this->statusActionResults[$Action])) 
+                {$NextStatus = $this->statusActionResults[$Action];}
             return $NextStatus;
             
 	}
-	
+
+        public function getStatusName($Status) //Статус 
+	{
+            return $this->statusMap[$Status];
+            
+	}
+
+        public function getActionName($Action) //Статус 
+	{
+            return $this->statusMap[$Action];
+            
+	}
+
 }
