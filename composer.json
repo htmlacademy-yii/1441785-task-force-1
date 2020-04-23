@@ -1,7 +1,16 @@
 {
-    "autoload": {
+    "name": "oleg/workforce1",
+    "description": "WorkForce",
+    "authors": [
+        {
+            "name": "OlegNikY",
+            "email": "olegniky@gmail.com"
+        }
+    ],
+    "require": {},
+	"autoload": {
         "psr-4": {
-            "TaskForce\\": "src/"
+            "Workforce\\": "src/"
         }
     }
 }
