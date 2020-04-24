@@ -1,5 +1,7 @@
 <?php
-require_once 'src/main/Task.php';
+//require_once 'src/main/Task.php';
+require_once 'vendor/autoload.php';
+use Workforce\WorkFlow\Task;
 
 $сurrectUserId = 1; //Заказчик
 $workerId = 2; //Исполнитель

@@ -1,5 +1,7 @@
 <?php
 
+namespace Workforce\WorkFlow;
+
 class Task
 {
 	const STATUS_NEW = 'New';
@@ -23,31 +25,35 @@ class Task
 	
 	private $clientId; //Идентификатор заказчика
 	private $workerId ; //Идентификатор исполнителя 
-	private $statusActionResults  = [self::ACTION_CANCEL => self::STATUS_CANCEL
-                                    , self::ACTION_CLOSE => self::STATUS_DONE
-                                    , self::ACTION_CANCELACCEPTED  => self::STATUS_NEW];        
-
+	private $statusActionResults  = [
+                self::ACTION_CANCEL => self::STATUS_CANCEL,
+                self::ACTION_CLOSE => self::STATUS_DONE,
+                self::ACTION_CANCELACCEPTED  => self::STATUS_NEW
+                ];   
 
 	public $currentStatus;
-	private $statusMap   =  [self::STATUS_NEW  => 'Новое'
-                                , self::STATUS_WORK  => 'Выполняется'
-                                , self::STATUS_CANCEL  => 'Отменено'
-                                , self::STATUS_DONE  => 'Завершено'
-                                , self::ACTION_CANCEL => 'Отменить'
-                                , self::ACTION_CLOSE => 'Завершить'
-                                , self::ACTION_ACCEPT  => 'Принять'
-                                , self::ACTION_CANCELACCEPTED  => 'Отказаться'         
-                                , self::ACTION_MESSAGE => 'Написать']; 
         
-	private $listAction  =  [self::USER_CLIENT => 
-                                       [self::STATUS_NEW => [self::ACTION_CANCEL],
-                                        self::STATUS_WORK => [self::ACTION_CLOSE]
-                                       ],
-                            self::USER_WORKER => 
-                                       [self::STATUS_NEW => [self::ACTION_ACCEPT],
-                                       self::STATUS_WORK => [self::ACTION_CANCELACCEPTED]
-                                       ]
-                            ];
+	private $statusMap  =  [
+                self::STATUS_NEW  => 'Новое',
+                self::STATUS_WORK  => 'Выполняется',
+                self::STATUS_CANCEL  => 'Отменено',
+                self::STATUS_DONE  => 'Завершено',
+                self::ACTION_CANCEL => 'Отменить',
+                self::ACTION_CLOSE => 'Завершить',
+                self::ACTION_ACCEPT  => 'Принять',
+                self::ACTION_CANCELACCEPTED  => 'Отказаться',
+                self::ACTION_MESSAGE => 'Написать'
+                ]; 
+        
+	private $listAction  =  [
+                self::USER_CLIENT => [
+                        self::STATUS_NEW => [self::ACTION_CANCEL],
+                        self::STATUS_WORK => [self::ACTION_CLOSE]
+                    ],
+                self::USER_WORKER => [self::STATUS_NEW => [self::ACTION_ACCEPT],
+                                      self::STATUS_WORK => [self::ACTION_CANCELACCEPTED]
+                    ]
+                ];
         
 	
 	public function __construct($currentUser, $workerID)  //конструктор
@@ -110,13 +116,13 @@ class Task
             
 	}
 
-    public function getStatusName($Status) //Статус 
+	public function getStatusName($Status) //Статус 
 	{
             return $this->statusMap[$Status];
             
 	}
-
-    public function getActionName($Action) //Статус 
+        
+	public function getActionName($Action) //Статус 
 	{
             return $this->statusMap[$Action];
             
